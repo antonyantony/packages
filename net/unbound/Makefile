@@ -39,7 +39,7 @@ define Package/unbound
   SUBMENU:=IP Addresses and Names
   USERID:=unbound:unbound
   TITLE+= (daemon)
-  DEPENDS+= +libunbound
+  DEPENDS+= +libunbound +libevent2 +libevent2-pthreads
 endef
 
 define Package/unbound/description
@@ -103,7 +103,7 @@ define Package/libunbound
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE+= (library)
-  DEPENDS+= +libpthread
+  DEPENDS+= +libpthread +libevent2 +libevent2-pthreads
 endef
 
 define Package/libunbound/description
@@ -117,6 +117,8 @@ CONFIGURE_ARGS += \
 	--enable-ecdsa \
 	--enable-tfo-client \
 	--enable-tfo-server \
+	--enable-event-api \
+	--with-libevent=$(STAGING_DIR)/usr \
 	--with-libexpat="$(STAGING_DIR)/usr" \
 	--with-ssl="$(STAGING_DIR)/usr" \
 	--with-user=unbound \
