@@ -74,6 +74,7 @@ MAKE_FLAGS+= \
     USE_FIPSCHECK=false \
     USE_LIBCAP_NG=false \
     USE_SYSTEMD_WATCHDOG=false \
+    USE_SECCOMP=false\
     INC_USRLOCAL="/usr" \
     FINALRUNDIR="/var/run/pluto" \
     ARCH="$(LINUX_KARCH)" \
