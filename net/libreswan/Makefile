@@ -39,9 +39,10 @@ $(call Package/libreswan/Default)
   SUBMENU:=VPN
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:= +libnss +librt +libevent2 +libevent2-pthreads +kmod-crypto-authenc \
-	+kmod-crypto-hash +kmod-ipt-ipsec +iptables-mod-ipsec +ip-full +kmod-ip-vti \
-	+kmod-ipsec +kmod-ipsec4 +kmod-crypto-rng +IPV6:kmod-ipsec6 +IPV6:kmod-ip6-vti +nspr +nss-utils
+  DEPENDS:= +IPV6:kmod-ip6-vti +IPV6:kmod-ipsec6 +ip-full +iptables-mod-ipsec \
+	+kmod-crypto-authenc +kmod-crypto-hash +kmod-crypto-rng +kmod-ip-vti \
+	+kmod-ipsec +kmod-ipsec4 +kmod-ipt-ipsec +libevent2 +libevent2-pthreads \
+	+libldns +libnss +librt +libunbound-heavy +nss-utils +nspr
   PROVIDES:=openswan
   CONFLICTS:=strongswan
   TITLE+= IPsec Server
@@ -64,7 +65,6 @@ endef
 TARGET_CFLAGS+= -Wno-error=format-nonliteral
 MAKE_FLAGS+= \
     WERROR_CFLAGS=" " \
-    USE_DNSSEC=false \
     USE_LINUX_AUDIT=false \
     USE_LABELED_IPSEC=false \
     USE_NM=false \
