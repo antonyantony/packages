@@ -41,7 +41,7 @@ $(call Package/libreswan/Default)
   CATEGORY:=Network
   DEPENDS:= +libnss +librt +libevent2 +libevent2-pthreads +kmod-crypto-authenc \
 	+kmod-crypto-hash +kmod-ipt-ipsec +iptables-mod-ipsec +ip-full +kmod-ip-vti \
-	+kmod-ipsec +kmod-ipsec4 +kmod-crypto-rng +IPV6:kmod-ipsec6 +IPV6:kmod-ip6-vti +nspr
+	+kmod-ipsec +kmod-ipsec4 +kmod-crypto-rng +IPV6:kmod-ipsec6 +IPV6:kmod-ip6-vti +nspr +nss-utils
   PROVIDES:=openswan
   CONFLICTS:=strongswan
   TITLE+= IPsec Server
