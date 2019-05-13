@@ -7,12 +7,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libreswan
-PKG_VERSION:=3.27
-PKG_RELEASE:=4
+PKG_VERSION:=3.28
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/libreswan/libreswan.git
 PKG_SOURCE_URL:=https://download.libreswan.org/
-PKG_HASH:=ead07dd701116094b483dc57e54e2a5ee9a06d3982bb142260bcbf3d1faf7b82
+PKG_HASH:=0e99b18ae8768e6cb7528d64fd24fb8612522ba5a5e640926f532f566d3b98db
 
 PKG_LICENSE:=GPL-2.0
 PKG_MAINTAINER:=Lucian Cristian <lucian.cristian@gmail.com>
