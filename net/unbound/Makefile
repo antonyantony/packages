@@ -9,10 +9,10 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=unbound
 PKG_VERSION:=1.9.1
-PKG_RELEASE:=3
+PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://www.unbound.net/downloads
+PKG_SOURCE_URL:=https://nlnetlabs.nl/downloads/unbound
 PKG_HASH:=c3c0bf9b86ccba4ca64f93dd4fe7351308ab54293f297a67de5a8914c1dc59c5
 
 PKG_MAINTAINER:=Eric Luehrsen <ericluehrsen@gmail.com>
@@ -23,22 +23,23 @@ PKG_CPE_ID:=cpe:/a:nlnetlabs:unbound
 PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
+PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_unbound_$(BUILD_VARIANT)_variant
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/unbound/Default
-  TITLE:=Validating Recursive DNS Server
-  URL:=https://www.unbound.net/
+  SECTION:=net
+  CATEGORY:=Network
+  SUBMENU:=IP Addresses and Names
+  TITLE:=Recursive DNS Server
+  URL:=https://nlnetlabs.nl/projects/unbound/about
   DEPENDS:=+libopenssl +@OPENSSL_WITH_EC
 endef
 
 define Package/unbound
   $(call Package/unbound/Default)
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=IP Addresses and Names
   USERID:=unbound:unbound
-  TITLE+= (daemon)
+  TITLE+= (daemon, light duty)
   DEPENDS+= +libunbound
 endef
 
@@ -46,11 +47,52 @@ define Package/unbound/description
   This package contains the Unbound daemon.
 endef
 
+define Package/unbound-heavy
+  $(call Package/unbound/Default)
+  USERID:=unbound:unbound
+  TITLE+= (daemon, heavy duty)
+  DEPENDS+= +libunbound-heavy
+  PROVIDES:=unbound
+endef
+
+define Package/unbound-heavy/description
+  This package contains the Unbound daemon including additional
+  libraries 'libevent' and 'libpthread' to better handle large networks with
+  heavy query loads.
+endef
+
+define Package/libunbound
+  $(call Package/unbound/Default)
+  SECTION:=libs
+  CATEGORY:=Libraries
+  SUBMENU:=Networking
+  TITLE+= (library, light duty)
+  VARIANT:=light
+endef
+
+define Package/libunbound/description
+  This package contains the Unbound shared library.
+endef
+
+define Package/libunbound-heavy
+  $(call Package/unbound/Default)
+  SECTION:=libs
+  CATEGORY:=Libraries
+  SUBMENU:=Networking
+  TITLE+= (library, heavy duty)
+  DEPENDS+= +libpthread +libevent2 +libevent2-pthreads
+  VARIANT:=heavy
+  PROVIDES:=libunbound
+endef
+
+define Package/libunbound-heavy/description
+  This package contains the Unbound shared library including additional
+  libraries 'libevent' and 'libpthread' to better handle large networks with
+  heavy query loads.
+endef
+
 define Package/unbound-anchor
   $(call Package/unbound/Default)
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=IP Addresses and Names
   TITLE+= (DSKEY utility)
   DEPENDS+= +unbound +libexpat
 endef
@@ -59,11 +101,18 @@ define Package/unbound-anchor/description
   This package contains the Unbound anchor utility.
 endef
 
+define Package/unbound-checkconf
+  $(call Package/unbound/Default)
+  TITLE+= (checker utility)
+  DEPENDS+= +unbound
+endef
+
+define Package/unbound-checkconf/description
+  This package contains the Unbound DNS configuration checker utility.
+endef
+
 define Package/unbound-control
   $(call Package/unbound/Default)
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=IP Addresses and Names
   TITLE+= (control utility)
   DEPENDS+= +unbound
 endef
@@ -74,9 +123,6 @@ endef
 
 define Package/unbound-control-setup
   $(call Package/unbound/Default)
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=IP Addresses and Names
   TITLE+= (control setup)
   DEPENDS+= +unbound-control +openssl-util
 endef
@@ -87,27 +133,12 @@ endef
 
 define Package/unbound-host
   $(call Package/unbound/Default)
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=IP Addresses and Names
   TITLE+= (lookup utility)
   DEPENDS+= +libunbound
 endef
 
 define Package/unbound-host/description
   This package contains the Unbound DNS lookup utility.
-endef
-
-define Package/libunbound
-  $(call Package/unbound/Default)
-  SECTION:=libs
-  CATEGORY:=Libraries
-  TITLE+= (library)
-  DEPENDS+= +libpthread
-endef
-
-define Package/libunbound/description
-  This package contains the Unbound shared library.
 endef
 
 CONFIGURE_ARGS += \
@@ -124,12 +155,26 @@ CONFIGURE_ARGS += \
 	--with-conf-file=/var/lib/unbound/unbound.conf \
 	--with-pidfile=/var/run/unbound.pid
 
+ifeq ($(BUILD_VARIANT),heavy)
+	CONFIGURE_ARGS += \
+		--with-pthreads \
+		--with-libevent="$(STAGING_DIR)/usr" \
+		--enable-event-api
+else
+    CONFIGURE_ARGS += \
+	    --without-pthreads \
+	    --without-solaris-threads \
+	    --without-libevent
+endif
+
 define Package/unbound/conffiles
 /etc/config/unbound
 /etc/unbound/unbound.conf
 /etc/unbound/unbound_ext.conf
 /etc/unbound/unbound_srv.conf
 endef
+
+Package/unbound-heavy/conffiles = $(Package/unbound/conffiles)
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
@@ -141,9 +186,7 @@ endef
 define Package/unbound/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) \
-		$(PKG_INSTALL_DIR)/usr/sbin/unbound \
-		$(PKG_INSTALL_DIR)/usr/sbin/unbound-checkconf \
-		$(1)/usr/sbin/
+		$(PKG_INSTALL_DIR)/usr/sbin/unbound $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/etc/unbound
 	$(INSTALL_DATA) \
 		$(PKG_INSTALL_DIR)/var/lib/unbound/unbound.conf \
@@ -167,9 +210,23 @@ define Package/unbound/install
 	$(INSTALL_DATA) ./files/unbound.sh $(1)/usr/lib/unbound/unbound.sh
 endef
 
+Package/unbound-heavy/install = $(Package/unbound/install)
+
+define Package/libunbound/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libunbound.so.* $(1)/usr/lib/
+endef
+
+Package/libunbound-heavy/install = $(Package/libunbound/install)
+
 define Package/unbound-anchor/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/unbound-anchor $(1)/usr/sbin/
+endef
+
+define Package/unbound-checkconf/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/unbound-checkconf $(1)/usr/sbin/
 endef
 
 define Package/unbound-control/install
@@ -187,15 +244,13 @@ define Package/unbound-host/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/unbound-host $(1)/usr/sbin/
 endef
 
-define Package/libunbound/install
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libunbound.so.* $(1)/usr/lib/
-endef
-
 $(eval $(call BuildPackage,unbound))
+$(eval $(call BuildPackage,unbound-heavy))
+$(eval $(call BuildPackage,libunbound))
+$(eval $(call BuildPackage,libunbound-heavy))
 $(eval $(call BuildPackage,unbound-anchor))
+$(eval $(call BuildPackage,unbound-checkconf))
 $(eval $(call BuildPackage,unbound-control))
 $(eval $(call BuildPackage,unbound-control-setup))
 $(eval $(call BuildPackage,unbound-host))
-$(eval $(call BuildPackage,libunbound))
 
