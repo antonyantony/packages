@@ -40,8 +40,9 @@ $(call Package/libreswan/Default)
   SECTION:=net
   CATEGORY:=Network
   DEPENDS:= +IPV6:kmod-ip6-vti +IPV6:kmod-ipsec6 +ip-full +iptables-mod-ipsec \
-	+kmod-crypto-authenc +kmod-crypto-hash +kmod-crypto-rng +kmod-ip-vti \
-	+kmod-ipsec +kmod-ipsec4 +kmod-ipt-ipsec +libevent2 +libevent2-pthreads \
+	+kmod-crypto-aead +kmod-crypto-authenc +kmod-crypto-gcm \
+	+kmod-crypto-hash +kmod-crypto-rng +kmod-ip-vti +kmod-ipsec \
+	+kmod-ipsec4 +kmod-ipt-ipsec +libevent2 +libevent2-pthreads \
 	+libldns +libnss +librt +libunbound-heavy +nss-utils +nspr
   PROVIDES:=openswan
   CONFLICTS:=strongswan
