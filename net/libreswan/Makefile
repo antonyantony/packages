@@ -78,7 +78,6 @@ MAKE_FLAGS+= \
     INC_USRLOCAL="/usr" \
     FINALRUNDIR="/var/run/pluto" \
     ARCH="$(LINUX_KARCH)" \
-    KERNELSRC="$(LINUX_DIR)"
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
