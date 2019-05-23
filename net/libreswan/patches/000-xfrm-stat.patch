@@ -1,0 +1,48 @@
+From c6559c0a63aab06599e0fe8fc8e1f33d52893d81 Mon Sep 17 00:00:00 2001
+From: Antony Antony <antony@phenome.org>
+Date: Thu, 23 May 2019 12:57:04 +0000
+Subject: [PATCH] pluto: workaround to missing /proc/net/xfrm_stat is not fatal
+
+libreswan 3.28, pluto, check this decide netlink xfrm availability.
+OpenWRT kernel is #CONFIG_XFRM_STATISTICS is not set
+
+when kernel get CONFIG_XFRM_STATISTICS=y drop this workaround.
+
+errors:
+"No XFRM kernel interface detected"
+"FAILURE in loading XFRM IPsec stack"
+
+Signed-off-by: Antony Antony <antony@phenome.org>
+
+diff --git a/programs/_stackmanager/_stackmanager.in b/programs/_stackmanager/_stackmanager.in
+index 03dcd5c0cf..0b991e21f6 100644
+--- a/programs/_stackmanager/_stackmanager.in
++++ b/programs/_stackmanager/_stackmanager.in
+@@ -150,12 +150,6 @@ startnetkey() {
+     else
+ 	echo "WARNING: can not change /proc/sys/net/core/xfrm_acq_expires from ${xcur} to ${xfrmlifetime}" >&2
+     fi
+-
+-    # Fail on error in loading XFRM IPsec stack
+-    if [ ! -f ${xfrm_stat} ]; then
+-	echo "FAILURE in loading XFRM IPsec stack" >&2
+-	exit 1
+-    fi
+ }
+ 
+ stopklips() {
+diff --git a/programs/pluto/kernel.c b/programs/pluto/kernel.c
+index 39b1e32389..2351c3d9a4 100644
+--- a/programs/pluto/kernel.c
++++ b/programs/pluto/kernel.c
+@@ -2666,10 +2666,6 @@ void init_kernel(void)
+ 	switch (kern_interface) {
+ #if defined(NETKEY_SUPPORT)
+ 	case USE_NETKEY:
+-		if (stat("/proc/net/xfrm_stat", &buf) != 0) {
+-			libreswan_log("No XFRM kernel interface detected");
+-			exit_pluto(PLUTO_EXIT_KERNEL_FAIL);
+-		}
+ 		libreswan_log(
+ 			"Using Linux XFRM/NETKEY IPsec interface code on %s",
+ 			kversion);
